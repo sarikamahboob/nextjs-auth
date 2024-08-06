@@ -14,7 +14,7 @@ export default {
         // if the data is validated successfully 
         if( validatedFields.success ){
           const {email, password} = validatedFields.data
-          console.log({email})
+
           // checking that the given email is in the database or not
           const user:any = await getUserByEmail(email);
 
