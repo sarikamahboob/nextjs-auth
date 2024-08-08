@@ -3,15 +3,27 @@ import authConfig from "./auth.config"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import {db} from "@/lib/db"
 import { getUserById } from "./data/user"
+import { UserRole } from "@prisma/client"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
+    // if user email is not verified
+    // async signIn({user}) {
+    //   console.log({user})
+    //   const existingUser = await getUserById(user?.id)
+    //   if(!existingUser || !existingUser.emailVerified) {
+    //     return false
+    //   }
+    //   return true;
+    // },
     async session({token, session}) {
       if(token.sub && session.user) {
         session.user.id = token.sub
       }
+      // session.user.customField = "anything"
       if(token.role && session.user) {
-        session.user.role = token.role
+        // session.user.role = token.role as "ADMIN" | "USER"
+        session.user.role = token.role as UserRole
       }
       return session;
     },
@@ -19,7 +31,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if(!token.sub) return token;
       const existingUser = await getUserById(token.sub)
       if(!existingUser) return token;
-      console.log({existingUser})
       token.role = existingUser.role
       return token;
     }
