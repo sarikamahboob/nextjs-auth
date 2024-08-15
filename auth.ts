@@ -23,6 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     // if user email is not verified
     async signIn({user, account}) {
+      console.log({user, account})
       // allow oAuth without email verification
       if(account?.provider !== 'credentials') return true;
       const existingUser = await getUserById(user?.id);
@@ -41,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true;
     },
     async session({token, session}) {
+      console.log({session, token})
       if(token.sub && session.user) {
         session.user.id = token.sub
       }
@@ -60,7 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async jwt({token}) {
-      console.log("Called")
+
       if(!token.sub) return token;
 
       const existingUser = await getUserById(token.sub)
