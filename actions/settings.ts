@@ -7,6 +7,8 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail";
+import bcrypt from "bcryptjs";
+// import { update } from "@/auth";
 
 export const settings = async (
   values: z.infer<typeof SettingSchema>
@@ -43,11 +45,39 @@ export const settings = async (
     return { success : "Verification email sent!" }
   }
 
-  await db.user.update({
+  if (values.password && values.newPassword && dbUser.password) {
+    const passwordsMatch = await bcrypt.compare(
+      values.password,
+      dbUser.password
+    )
+
+    if (!passwordsMatch) {
+      return { error: "Incorrect password!" }
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      values.newPassword,
+      10
+    )
+    values.password = hashedPassword
+    values.newPassword = undefined
+  }
+
+  const updatedUser = await db.user.update({
     where: { id: dbUser.id },
     data: {
       ...values,
     }
   })
+
+  // update({
+  //   user: {
+  //     name: updatedUser.name,
+  //     email: updatedUser.email,
+  //     isTwoFactorEnabled: updatedUser.isTwoFactorEnabled,
+  //     role: updatedUser.role,
+  //     password: updatedUser.password,
+  //   }
+  // })
   return { success: "Settings Updated!"}
 }
